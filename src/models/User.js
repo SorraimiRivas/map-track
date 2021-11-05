@@ -14,7 +14,8 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", function (next) {
-  if (!this.isModified("password")) {
+  const user = this;
+  if (!user.isModified("password")) {
     return next();
   }
 
@@ -23,19 +24,20 @@ userSchema.pre("save", function (next) {
       return next(err);
     }
 
-    bcrypt.hash(this.password, salt, (err, hash) => {
+    bcrypt.hash(user.password, salt, (err, hash) => {
       if (err) {
         return next(err);
       }
-      this.password = hash;
+      user.password = hash;
       next();
     });
   });
 });
 
 userSchema.methods.comparePassword = function (candidatePassword) {
+  const user = this;
   return new Promise((resolve, reject) => {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+    bcrypt.compare(candidatePassword, user.password, (err, isMatch) => {
       if (err) {
         return reject(err);
       }
